@@ -1,0 +1,13 @@
+Package: finalprojectgroup2
+Title: Multi-Path Stepwise Selection with AIC
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Description: This package supports multi-path forward selection with AIC,
+    including resampling-babsed stability and plausible model selection
+    using an average-stability threshold.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
