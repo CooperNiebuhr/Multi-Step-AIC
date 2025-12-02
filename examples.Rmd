@@ -1,0 +1,168 @@
+---
+title: "examples"
+output: html_document
+date: "2025-12-02"
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Install from GitHub if not already installed
+# Comment/Uncomment next two lines as needed
+#install.packages("devtools")
+devtools::install_github("R-4-Data-Science/finalprojectgroup2")
+
+# Load the package
+library(finalprojectgroup2)
+
+# Optional: set seed for reproducibility of examples
+set.seed(1)
+```
+
+
+## 5.1 - Gaussian Linear Regression
+
+```{r}
+## 5.1 Linear regression (Gaussian) — using package functions
+
+set.seed(1)
+n <- 120; p <- 8
+X <- matrix(rnorm(n * p), n, p)
+beta <- c(2, -1.5, 0, 0, 1, rep(0, p - 5))
+y <- as.numeric(X %*% beta + rnorm(n, sd = 1))
+colnames(X) <- paste0("x", 1:p)
+
+# 1. Multi-path forward selection on the full data
+forest <- build_paths(
+  X      = X,
+  y      = y,
+  family = "gaussian",
+  K      = min(p, 10),
+  eps    = 1e-6,
+  delta  = 1,
+  L      = 50
+)
+
+# Inspect the best few models by AIC
+head(forest$aic_by_model[order(forest$aic_by_model$aic), ], 5)
+
+# 2. Stability via bootstrap resampling
+stab <- stability(
+  X             = X,
+  y             = y,
+  family        = "gaussian",
+  B             = 50,
+  resample_type = "bootstrap",
+  K             = min(p, 10),
+  eps           = 1e-6,
+  delta         = 1,
+  L             = 50
+)
+
+# Variable-wise stability scores π_j
+stab$pi
+
+# 3. Plausible models: low AIC and high average stability
+plaus <- plausible_models(
+  forest = forest,
+  stab   = stab,
+  Delta  = 2,
+  tau    = 0.6
+)
+
+plaus
+
+```
+
+
+Note - Look over and make sure parameters match project description
+
+## 5.2 - Binomial Linear Regression
+```{r example-5-2-binomial, message=FALSE}
+set.seed(2)
+
+## Simulate a logistic regression dataset
+n <- 200
+p <- 8
+
+X <- matrix(rnorm(n * p), n, p)
+colnames(X) <- paste0("x", 1:p)
+
+beta <- c(1.5, -1.0, 0.8, 0, 0, 0, 0, 0)
+eta  <- X %*% beta
+prob <- 1 / (1 + exp(-eta))  # plogis(eta)
+
+y <- rbinom(n, size = 1, prob = prob)
+
+## 1. Multi-path forward selection on full data (binomial family)
+forest_bin <- build_paths(
+  X      = X,
+  y      = y,
+  family = "binomial",
+  K      = min(p, 10),
+  eps    = 1e-6,
+  delta  = 1,
+  L      = 50
+)
+
+# Best few models by AIC
+head(forest_bin$aic_by_model[order(forest_bin$aic_by_model$aic), ], 5)
+
+## 2. Stability via bootstrap resampling
+stab_bin <- stability(
+  X             = X,
+  y             = y,
+  family        = "binomial",
+  B             = 30,        # keep modest for knitting speed
+  resample_type = "bootstrap",
+  K             = min(p, 10),
+  eps           = 1e-6,
+  delta         = 1,
+  L             = 50
+)
+
+# Variable-wise stability scores π_j
+stab_bin$pi
+
+## 3. Plausible models: AIC window + stability threshold
+plaus_bin <- plausible_models(
+  forest = forest_bin,
+  stab   = stab_bin,
+  Delta  = 2,
+  tau    = 0.6
+)
+
+plaus_bin
+
+## 4. If there is at least one plausible model, fit it and compute confusion metrics
+if (nrow(plaus_bin) > 0) {
+  # Take the best plausible model (lowest AIC)
+  best_idx   <- which.min(plaus_bin$aic)
+  vars_best  <- plaus_bin$vars[[best_idx]]
+
+  X_df <- as.data.frame(X)
+  y_df <- as.numeric(y)
+
+  if (length(vars_best) == 0L) {
+    # Empty model: intercept-only logistic regression
+    form_best <- y_df ~ 1
+  } else {
+    var_names <- colnames(X_df)[vars_best]
+    form_best <- as.formula(
+      paste("y_df ~", paste(var_names, collapse = " + "))
+    )
+  }
+
+  fit_best <- glm(
+    formula = form_best,
+    data    = X_df,
+    family  = binomial()
+  )
+
+  p_hat <- predict(fit_best, type = "response")
+
+  cm <- confusion_metrics(y_true = y_df, p_hat = p_hat, cutoff = 0.5)
+
+  cm$confusion
+  cm$metrics
+}
+```
