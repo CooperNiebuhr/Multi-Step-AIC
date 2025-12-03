@@ -6,7 +6,7 @@ y <- X %*% beta + rnorm(n, sd = 1)
 
 out <- stability(X = X, y = as.numeric(y), 
                   B = 50, 
-                  resample = "bootstrap", 
+                  resample_type = "bootstrap",
                   family = "gaussian", 
                   K = 10, 
                   eps = 1e-6, 
