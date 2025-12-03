@@ -1,9 +1,0 @@
----
-title: "Model Selection on Diabetes Data"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Model Selection on Diabetes Data}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
