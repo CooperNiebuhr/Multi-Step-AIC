@@ -5,7 +5,7 @@ beta <- c(2, -1.5, 0, 0, 1, rep(0, p-5))
 y <- X %*% beta + rnorm(n, sd = 1)
 
 forest <- build_paths(X = X, y = as.numeric(y), family = "gaussian", K = min(ncol(X), 10), eps = 1e-6, delta = 1, L = 50)
-stab <- stability(X = X, y = as.numeric(y), B = 50, resample = "bootstrap", family = "gaussian", K = 10, eps = 1e-6, delta = 1, L = 50)
+stab <- stability(X = X, y = as.numeric(y), B = 50, resample_type = "bootstrap", ...)
 
 
 # compute AIC cutoff manually
