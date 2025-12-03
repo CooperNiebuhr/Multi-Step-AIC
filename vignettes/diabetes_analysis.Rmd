@@ -12,7 +12,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(finalprojectgroup2)
 ```
 
 ## Introduction
@@ -23,7 +22,10 @@ This vignette demonstrates the multi-path model selection algorithm on the **Dia
 
 We use the `efron2004` dataset from the `care` package.
 
-```{r data}
+```{r data, message = FALSE}
+library(finalprojectgroup2)
+library(care)
+
 data("efron2004", package = "care")
 
 X <- efron2004$x
@@ -93,4 +95,3 @@ if (nrow(plausible) > 0) {
 ## Conclusion
 
 The table above shows models that balance goodness-of-fit (AIC) with reliability (stability scores). These represent competing but equally plausible explanations of disease progression.
-
