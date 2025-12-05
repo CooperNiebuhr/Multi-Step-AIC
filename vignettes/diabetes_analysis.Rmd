@@ -9,8 +9,13 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  collapse  = TRUE,
+  comment   = "#>",
+  fig.width = 6,      
+  fig.height = 4,
+  fig.retina = 2,
+  out.width = "70%",  
+  fig.align = "center"
 )
 ```
 
@@ -51,6 +56,7 @@ forest <- build_paths(
 )
 
 head(forest$aic_by_model, 10)
+plot_branching_by_step(forest)
 ```
 
 ## Step 2: Stability Analysis
@@ -76,7 +82,7 @@ cbind(Variable = colnames(X)[top_vars], Stability = round(stab$pi[top_vars], 3))
 
 ## Step 3: Plausible Models
 
-We filter the forest to find models within 2 AIC units of the minimum (`Delta = 2`) with average stability at least 0.6 (`tau = 0.6`).
+We filter the forest to find models within 4 AIC units of the minimum (`Delta = 4`) with average stability at least 0.4 (`tau = 0.4`).
 
 ```{r plausible}
 plausible <- plausible_models(forest, stab, Delta = 4, tau = 0.4)
@@ -95,3 +101,5 @@ if (nrow(plausible) > 0) {
 ## Conclusion
 
 The table above shows models that balance goodness-of-fit (AIC) with reliability (stability scores). These represent competing but equally plausible explanations of disease progression.
+
+
