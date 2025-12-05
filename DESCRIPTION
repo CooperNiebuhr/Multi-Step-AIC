@@ -1,11 +1,13 @@
 Package: finalprojectgroup2
-Title: Multi-Path Stepwise Selection with AIC
-Version: 0.0.0.9000
+Title: Multi-Path Forward Selection with AIC and Stability Analysis
+Version: 0.0.1
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: This package supports multi-path forward selection with AIC,
-    including resampling-babsed stability and plausible model selection
-    using an average-stability threshold.
+    person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: Provides multi-path forward selection using AIC. 
+    Unlike traditional stepwise regression, this procedure explores multiple 
+    near-optimal model paths, identifies instability via resampling-based 
+    selection, and filters down to models that are both AIC competitive 
+    and stable across bootstrap replicates.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -13,7 +15,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     stats,
-    methods
+    methods,
+    ggplot2,
+    dplyr,
+    tidyr,
+    reshape2,
+    purrr
 Suggests:
     knitr,
     rmarkdown,
