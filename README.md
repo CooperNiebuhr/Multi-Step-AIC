@@ -1,21 +1,23 @@
-# final_project_group2
+# Multi-Step AIC
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 ## Overview
 
-`finalprojectgroup2` implements a **multi-path forward model selection** procedure.
+`Multi-Step AIC` implements a **multi-path forward model selection** procedure.
 Traditional stepwise model selection commits to a single best model at each iteration,
 which often leads to instability when many models have very similar AIC values.
 This package instead maintains a *frontier* of near-optimal models at each step,
-allowing multiple promising paths to be evaluated and compared.
+allowing multiple promising paths to be evaluated and compared. Unlike classical 
+forward stepwise procedures (e.g. stepAIC), which follow a single greedy path, 
+this approach explicitly preserves uncertainty in early selection decisions.
 
 This enables:
 
 - exploration of multiple plausible model sequences,
 - identification of unstable variable-selection decisions,
-- and post-selection validation through stability-based filtering.
+- and post-selection screening through stability-based filtering.
 
 A typical workflow consists of:
 
@@ -23,10 +25,6 @@ A typical workflow consists of:
 2. Assess selection stability through resampling using `stability()`  
 3. Filter and prioritize models by AIC closeness and empirical stability using `plausible_models()`  
 
-For extended examples and diagnostics, see package vignettes:
-
-- `vignette("diabetes_progression")`
-- `vignette("branching_behavior")`
 
 ## Installation
 
@@ -34,7 +32,7 @@ For extended examples and diagnostics, see package vignettes:
 install.packages("remotes")
 
 remotes::install_github(
-  "R-4-Data-Science/finalprojectgroup2",
+  "CooperNiebuhr/Multi-Step-AIC",
   dependencies = TRUE
 )```
 
@@ -54,16 +52,9 @@ colnames(X) <- paste0("x", 1:p)
 
 ### 1. Build multi-path selection forest
 ```r
-forest <- build_paths(
-  X      = X,
-  y      = y,
-  family = "gaussian",
-  K      = min(p, 10),
-  eps    = 1e-6,
-  delta  = 1,
-  L      = 50
-)
+forest <- build_paths(X, y, family = "gaussian")
 ```
+Advanced controls (branching tolerance, frontier size, etc.) are available; see ?build_paths.
 
 ### 2. Compute model stability via bootstrap resampling
 
@@ -73,13 +64,9 @@ stab <- stability(
   y             = y,
   family        = "gaussian",
   B             = 50,
-  resample_type = "bootstrap",
-  K             = min(p, 10),
-  eps           = 1e-6,
-  delta         = 1,
-  L             = 50
-)
+  resample_type = "bootstrap")
 ```
+Advanced branching controls are available; see ?stability.
 
 ### 3. Identify plausible models
 ```r
@@ -96,68 +83,17 @@ head(plaus)
 #> x1+x3+x5     3     92.6       0.74
 ```
 
----
+Models near the AIC optimum that also exhibit high stability are natural candidates for downstream interpretation or validation.
 
-## Example usage: Binomial Logistic Regression
 
-```r
-set.seed(2)
+For extended examples and diagnostics, see package vignettes:
 
-## Simulate a logistic regression dataset
-n <- 200
-p <- 8
+- `vignette("diabetes_progression")`
+- `vignette("branching_behavior")`
 
-X <- matrix(rnorm(n * p), n, p)
-colnames(X) <- paste0("x", 1:p)
 
-beta <- c(1.5, -1.0, 0.8, 0, 0, 0, 0, 0)
-eta  <- X %*% beta
-prob <- 1 / (1 + exp(-eta))
+### Relation to Classical Stepwise Selection
 
-y <- rbinom(n, size = 1, prob = prob)
-```
+Classical forward stepwise procedures select a single variable at each step based on marginal AIC improvement, which can lead to unstable model choices when predictors are correlated or effects are weak.  
+Multi-Step AIC generalizes this idea by retaining multiple near-optimal candidates at each step, allowing analysts to assess model uncertainty rather than committing to a single path.
 
-### 1. Multi-path forward selection
-
-```r
-forest <- build_paths(
-  X      = X,
-  y      = y,
-  family = "binomial",
-  K      = min(p, 10),
-  eps    = 1e-6,
-  delta  = 1,
-  L      = 50
-)
-```
-
-### 2. Stability assessment
-
-```r
-stab <- stability(
-  X             = X,
-  y             = y,
-  family        = "binomial",
-  B             = 30,
-  resample_type = "bootstrap",
-  K             = min(p, 10),
-  eps           = 1e-6,
-  delta         = 1,
-  L             = 50
-)
-```
-
-### 3. Extract stable and AIC-compatible models
-
-```r
-plaus <- plausible_models(
-  forest = forest,
-  stab   = stab,
-  Delta  = 2,
-  tau    = 0.6
-)
-
-head(plaus)
-```
-
-This identifies models that are simultaneously competitive in AIC and empirically stable across resampled datasets.
