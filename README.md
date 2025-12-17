@@ -34,7 +34,8 @@ install.packages("remotes")
 remotes::install_github(
   "CooperNiebuhr/Multi-Step-AIC",
   dependencies = TRUE
-)```
+)
+```
 
 ---
 
